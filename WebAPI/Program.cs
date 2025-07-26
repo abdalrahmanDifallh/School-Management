@@ -24,7 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
+builder.Services.AddHttpContextAccessor();
 // Add Entity Framework
 builder.Services.AddDbContext<SchoolManagementContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -15,6 +15,6 @@ namespace Services.AuthenticationService
         Task<ClaimsIdentity> GetUserClaimsIdentity(ApplicationUser user);
         Task<ClaimsIdentity> GetUserClaimsIdentity(string userId);
         Task<ResponseResult<AppUserDTO1>> Login(LoginDto requestModel);
-
+        //Task<ResponseResult<string>> Logout();
     }
 }

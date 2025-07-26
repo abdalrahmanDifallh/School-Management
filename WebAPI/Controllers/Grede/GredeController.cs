@@ -1,9 +1,13 @@
-﻿using Core.Domains;
+﻿using Core;
+using Core.Domains;
+using Core.Enums;
 using Data.DTOs.Grade;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProjectManagement.WebAPI.Filters;
 using Services.Grade;
+using Syncfusion.EJ2.Base;
 using static Data.DTOs.Grade.GradeDTO;
 
 namespace WebAPI.Controllers.Gred
@@ -22,6 +26,7 @@ namespace WebAPI.Controllers.Gred
        
 
         [HttpGet("get-all-grades-by-id-student")]
+        [Permission(nameof(Auth.PermissionsStudent.Grades_Get_by_studentId))]
         public async Task<ResponseResult<List<GradeViewDto>>> GetAllGredsForStudent(string studentId)
             
          {
@@ -29,27 +34,40 @@ namespace WebAPI.Controllers.Gred
             return greds;
          }
 
+
+
         [HttpGet("get-all-grades-by-teacherId")]
-        public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllGredesForTeacher(string teacharId)
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId))]
+        public async Task<PagedListResult<GradeAllViewDto>> GetAllGredesForTeacher(DataManagerRequest dm , string teacharId)
 
         {
-            var greds = await _gradeService.GetAllStudentForTeacherIdAsync(teacharId);
+            var greds = await _gradeService.GetAllGradesForTeacherIdAsync(dm ,teacharId);
             return greds;
         }
 
         [HttpGet("get-all-grades-by-teacherId-And-subjectId")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId_and_subjectId))]
+
         public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllGredesForTeacherAndSubject(string teacherId, int subjectId)
 
         {
-            var greds = await _gradeService.GetAllStudentForTeacherIdAndSubjectIdAsync(teacherId, subjectId);
+            var greds = await _gradeService.GetAllGradesForTeacherIdAndSubjectIdAsync(teacherId, subjectId);
             return greds;
         }
 
         [HttpPut("put-grade-by-gradeI")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Update))]
+
         public async Task<ResponseResult<GradeNewDto>> PutGrade(GradeEditDto gradeEditDto)
         {
             var gradeEdited = await _gradeService.PutGredesAsync(gradeEditDto);
             return gradeEdited;
         }
+
+
+        //GetNumberOfClassesAsync
+
+
+
     }
 }

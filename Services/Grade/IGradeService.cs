@@ -1,4 +1,6 @@
-﻿using Core.Domains;
+﻿using Core;
+using Core.Domains;
+using Syncfusion.EJ2.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +14,13 @@ namespace Services.Grade
     {
         Task<ResponseResult<List<GradeViewDto>>> GetAllGredesForStudentAsync(string userId);
 
-        Task<ResponseResult<List<GradeAllViewDto>>> GetAllStudentForTeacherIdAsync(string teacharId);
+        Task<PagedListResult<GradeAllViewDto>> GetAllGradesForTeacherIdAsync(DataManagerRequest dm, string teacharId);
 
-        Task<ResponseResult<List<GradeAllViewDto>>> GetAllStudentForTeacherIdAndSubjectIdAsync(string teacherId, int subjectId);
+        Task<ResponseResult<List<GradeAllViewDto>>> GetAllGradesForTeacherIdAndSubjectIdAsync(string teacherId, int subjectId);
 
         Task<ResponseResult<GradeNewDto>> PutGredesAsync(GradeEditDto gradeEditDto);
+
+        Task<ResponseResult<float>> GetAvregeScore();
 
 
     }

@@ -1,5 +1,7 @@
-﻿using Core.Domains;
-
+﻿using Core;
+using Core.Domains;
+using Data.DTOs;
+using Syncfusion.EJ2.Base;
 using static Data.DTOs.Teacher.TeacherDto;
 
 namespace Services.TeacherService
@@ -7,5 +9,8 @@ namespace Services.TeacherService
     public interface ITeacherService
     {
         Task<ResponseResult<List<TeacherAllViewDto>>> GetAllTeacherAsync();
+
+        Task<PagedListResult<AppUserViewDTO>> GetTeachersAsync(DataManagerRequest dm);
+        Task<ResponseResult<int>> GetNumberOfTeacherAsync();
     }
 }

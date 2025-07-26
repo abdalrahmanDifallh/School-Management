@@ -28,9 +28,9 @@ namespace Data.DTOs
     {
 
         
-        public string FullName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
+        public string FullName { get; set; } 
+        public string Email { get; set; } 
+        public string PasswordHash { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
         public bool Gender { get; set; }
@@ -41,6 +41,30 @@ namespace Data.DTOs
         //public string RoleId { get; set; }
 
     }
+
+    public class AppUserViewDTO
+    {
+
+        public string Id { get; set; } 
+
+        public string FullName { get; set; }
+       
+        
+        public string? PhoneNumber { get; set; }
+        public string? Address { get; set; }
+        public bool? Gender { get; set; }
+        public string? Image { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
+        public string ClassName { get; set; }
+        
+       public double  AverageGrade { get; set; }
+
+     
+
+    }
+
+
+
     public class AppUserUpdateDTO
     {
         public string Id { get; set; } 

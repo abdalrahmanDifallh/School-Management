@@ -1,15 +1,18 @@
 ﻿
+using Core;
 using Core.Domains;
 
 using Microsoft.AspNetCore.Http;
-
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Data;
 using SchoolManagement.Models;
 using Services._Base;
 using Services.LoggerService;
-
+using Services.SyncGridOperations;
+using Syncfusion.EJ2.Base;
 using static Data.DTOs.Classe.ClasseDto;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace Services.Classes
@@ -17,9 +20,12 @@ namespace Services.Classes
     public class ClasseService : BaseService<ClasseService>, IClasseService
     {
         private readonly SchoolManagementContext _context;
-        public ClasseService(SchoolManagementContext dbContext, ILoggerService<ClasseService> logger, IHttpContextAccessor httpAccessor) : base(dbContext, logger, httpAccessor)
+        private readonly UserManager<ApplicationUser>  _userManager;
+
+        public ClasseService(SchoolManagementContext dbContext, ILoggerService<ClasseService> logger, IHttpContextAccessor httpAccessor , UserManager<ApplicationUser> userManager) : base(dbContext, logger, httpAccessor)
         {
             _context = dbContext;
+            _userManager = userManager;
         }
 
         public async Task<ResponseResult<ClasseCreatDTO>> CreatClasseAsync(ClasseCreatDTO request)
@@ -30,13 +36,13 @@ namespace Services.Classes
                 return Error<ClasseCreatDTO>("Name Classe already exists. ");
             }
 
-            // فحص إذا كانت السنة الأكاديمية موجودة
+            
             if (await _context.Classrooms.AnyAsync(c => c.AcademicYear == request.AcademicYear))
             {
                 return Error<ClasseCreatDTO>("AcademicYear Classe already exists. ");
             }
 
-            // فحص إذا كان الأستاذ مربوط بصف آخر
+            
             if (await _context.Classrooms.AnyAsync(c => c.TeacherUserId == request.TeacherUserId ))
             {
                 return Error<ClasseCreatDTO>("TeacherUser Classe already exists. ");
@@ -72,7 +78,7 @@ namespace Services.Classes
                 existingClass.IsActive = false;
                 existingClass.IsDeleted = true;
                 existingClass.TeacherUserId = null;
-              
+
 
                 _context.Classrooms.Update(existingClass); // Mark entity as modified
                 var result = await _context.SaveChangesAsync();
@@ -89,7 +95,7 @@ namespace Services.Classes
                     Name = existingClass.Name,
                     AcademicYear = existingClass.AcademicYear,
                     ClassTeacher = existingClass.TeacherUserId,
-                    StudentNumber = existingClass.ApplicationUsers.Count == 0 ? 0 : existingClass.ApplicationUsers.Count - 1,
+                   
 
                 });
             }
@@ -99,31 +105,32 @@ namespace Services.Classes
             }
         }
 
-        public async Task<ResponseResult<List<ClasseDTO>>> GetAllClassesAsync() 
+        public async Task<PagedListResult<ClasseDTO>> GetAllClassesAsync(DataManagerRequest dm)
         {
+           
             try
             {
-                var classes = await _context.Classrooms
+                var classes = _context.Classrooms
                     .Where(u => u.IsActive == true)
+
                     .Include(s => s.Teacher)
-                    .Include(s => s.ApplicationUsers) // تضمين بيانات المستخدمين
+                    .Include(s => s.ApplicationUsers)
                     .Select(s => new ClasseDTO
                     {
                         Id = s.Id,
                         Name = s.Name,
                         AcademicYear = s.AcademicYear,
                         ClassTeacher = s.Teacher.FullName,
-                        ImageTeacher = s.Teacher.Image,
-                        StudentNumber = s.ApplicationUsers.Count == 0 ? 0 : s.ApplicationUsers.Count - 1
+                        ImageOfTeacher = s.Teacher.Image,
+                        NumberOfStudent = _userManager.Users.Count(u => u.Classroom.Id == s.Id)
+                    });
 
-                    })
-                    .ToListAsync();
-
-                return Success(classes);
+                var result = await SyncGridOperations<ClasseDTO>.PagingAndFilterAsync(classes, dm);
+                return result;
             }
             catch (Exception ex)
             {
-                return Error<List<ClasseDTO>>(ex);
+                return new PagedListResult<ClasseDTO>();
             }
         }
 
@@ -147,8 +154,8 @@ namespace Services.Classes
                     Name = classe.Name,
                     AcademicYear = classe.AcademicYear,
                     ClassTeacher = classe.TeacherUserId == null ? null : classe.Teacher.FullName,
-                    ImageTeacher = classe.TeacherUserId == null ? null : classe.Teacher.Image,
-                    StudentNumber = classe.ApplicationUsers.Count == 0 ? 0 : classe.ApplicationUsers.Count - 1
+                    ImageOfTeacher = classe.TeacherUserId == null ? null : classe.Teacher.Image,
+                    NumberOfStudent = classe.ApplicationUsers.Count == 0 ? 0 : classe.ApplicationUsers.Count - 1
                 };
 
                 return Success(result);
@@ -158,6 +165,30 @@ namespace Services.Classes
             {
                 return Error<ClasseDTO>(ex);
             }
+        }
+
+        public async Task<ResponseResult<string>> GetClasseNameByTeacherIdAsync(string teacherId)
+        {
+
+
+            var nameClass = await _context.Classrooms
+                .Where(s => s.TeacherUserId == teacherId)
+                .Select(s => s.Name)
+                .FirstOrDefaultAsync();
+                
+                
+
+            return new ResponseResult<string> { Data = nameClass, IsSuccess = true };
+        }
+
+        public async Task<ResponseResult<int>> GetNumberOfClassesAsync()
+        {
+            
+
+            var count = await _context.Classrooms
+                      .CountAsync();
+
+            return new ResponseResult<int> { Data = count, IsSuccess = true };
         }
 
         public async Task<ResponseResult<ClasseUpdateDTO>> UpdateClassetAsync(ClasseUpdateDTO classe)

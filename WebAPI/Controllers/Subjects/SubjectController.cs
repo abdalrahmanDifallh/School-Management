@@ -14,7 +14,7 @@ namespace WebAPI.Controllers.Subjects
 {
     [Route("api/[controller]")]
     [ApiController]
-   
+    [Authorize]
     public class SubjectController : ControllerBase
     {
         private readonly ISubjectService _subjectService;
@@ -24,7 +24,7 @@ namespace WebAPI.Controllers.Subjects
         }
 
         [HttpGet("get-all-subject")]
-       // [Permission(nameof(Auth.PermissionsAdmin.Subjects_Get))] 
+        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Get))] 
         public async Task<ResponseResult<List<SubjectDTO>>> GetAllSubject()
         {
 
@@ -33,6 +33,7 @@ namespace WebAPI.Controllers.Subjects
         }
 
         [HttpPost("create-subject")]
+        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Create))]
         public async Task<ActionResult<SubjectCreatDTO>> CreatSubjctAsync(SubjectCreatDTO request)
         {
             if (string.IsNullOrWhiteSpace(request.Name) )
@@ -49,7 +50,7 @@ namespace WebAPI.Controllers.Subjects
         }
 
         [HttpDelete("delete-subject")]
-
+        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Delete))]
         public async Task<ResponseResult<SubjectDTO>> DeleteSubject(int subjectId)
         {
             var deletedSubject = await _subjectService.DeleteSubjectAsync(subjectId);
@@ -57,6 +58,7 @@ namespace WebAPI.Controllers.Subjects
         }
 
         [HttpGet("get-subject-by-id")]
+        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Get_By_Id))]
         public async Task<ResponseResult<SubjectDTO>> GetSubjectById(int subjectId)
         {
             var subject = await _subjectService.GetSubjectByIdAsync(subjectId);
@@ -64,7 +66,7 @@ namespace WebAPI.Controllers.Subjects
         }
 
         [HttpPut("update-subject")]
-
+        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Update))]
         public async Task<ResponseResult<SubjectDTO>> UpdateClasse(SubjectDTO classe)
         {
             var updatedSubject = await _subjectService.UpdateSubjectAsync(classe);
@@ -73,14 +75,6 @@ namespace WebAPI.Controllers.Subjects
 
 
 
-        [HttpGet("test")]
-        [Authorize]
-        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Get))] 
-        public ActionResult GetSubjectById()
-        {
-            var subject = "testasdadsdas";
-            return Ok(subject);
-        }
 
     }
 }

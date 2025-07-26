@@ -24,8 +24,6 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("login")]
-       
-
         public async Task<ActionResult<TokenResponseDto>> Login(LoginDto request)
         {
             // إضافة logging للتشخيص
@@ -61,6 +59,21 @@ namespace WebAPI.Controllers
         //    }
         //    return Ok(result); 
         //}
+
+        //[HttpPost("logout")]
+        //[Authorize] 
+        //public async Task<IActionResult> Logout()
+        //{
+        //    var result = await _authenticationService.Logout();
+
+        //    if (result.IsSuccess)
+        //    {
+        //        return Ok(new { message = "Logged out successfully" });
+        //    }
+
+        //    return BadRequest("Logged out field");
+        //}
+
 
 
         [HttpPost("register-student")]
@@ -129,5 +142,43 @@ namespace WebAPI.Controllers
             var deletedUser = await _authService.DeleteUserAsync(userId);
             return deletedUser;
         }
+
+        //[HttpPost("logout")]
+        //[Authorize] // Require authentication to logout
+        //public async Task<ActionResult> Logout()
+        //{
+        //    try
+        //    {
+        //        // Get the current user's ID from the JWT token
+        //        var userId = User.FindFirst("nameid")?.Value;
+
+        //        if (!string.IsNullOrEmpty(userId))
+        //        {
+        //            Console.WriteLine($"User {userId} logging out");
+
+        //            // Here you could invalidate the refresh token in the database if you have one
+        //            // await _authenticationService.InvalidateRefreshTokenAsync(userId);
+        //        }
+
+        //        // Since JWT tokens are stateless, we mainly just return success
+        //        // The client will remove the token from storage
+        //        return Ok(new
+        //        {
+        //            message = "Logged out successfully",
+        //            success = true
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Logout error: {ex.Message}");
+        //        return Ok(new
+        //        {
+        //            message = "Logged out successfully",
+        //            success = true
+        //        }); // Still return success even if there's an error
+        //    }
+        //}
+
+
     }
 }

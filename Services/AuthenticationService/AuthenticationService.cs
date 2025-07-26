@@ -25,7 +25,7 @@ namespace Services.AuthenticationService
     {
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator;
-
+        private readonly IHttpContextAccessor _httpContextAccessor = httpAccessor;
         public async Task<ResponseResult<AppUserDTO1>> Login(LoginDto requestModel)
         {
           //  var user = await _userManager.FindByNameAsync(requestModel.Email);
@@ -93,5 +93,37 @@ namespace Services.AuthenticationService
 
             return await GetUserClaimsIdentity(user);
         }
+
+        //public async Task<ResponseResult<string>> Logout()
+        //{
+        //    try
+        //    {
+        //        // الحصول على معرف المستخدم الحالي من Claims
+        //        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        //        if (string.IsNullOrEmpty(userId))
+        //        {
+        //            return Error<string>("UserNotAuthenticated");
+        //        }
+
+        //        // الحصول على المستخدم
+        //        var user = await _userManager.FindByIdAsync(userId);
+        //        if (user == null)
+        //        {
+        //            return Error<string>("UserNotFound");
+        //        }
+
+                
+              
+        //        return Success("LoggedOutSuccessfully");
+        //    }
+        //    catch (Exception ex)
+        //    {
+              
+        //        return Error<string>("LogoutFailed");
+        //    }
+        //}
+
+
     }
 }

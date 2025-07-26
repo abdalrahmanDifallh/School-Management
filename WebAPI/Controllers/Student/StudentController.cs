@@ -1,61 +1,104 @@
-﻿//using Core.Domains;
-//using Data.DTOs;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.OpenApi.Models;
-//using Services.AuthenticationService;
-//using Services.StudentService;
-////using Services.User;
-//using static Data.DTOs.Student.StudentDto;
+﻿using Core;
+using Core.Domains;
+using Core.Enums;
+using Data.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
+using ProjectManagement.WebAPI.Filters;
+using Services.AuthenticationService;
+using Services.StudentService;
+using Syncfusion.EJ2.Base;
 
-//namespace WebAPI.Controllers.Student
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    [Authorize]
-//    public class StudentController : ControllerBase
-//    {
-//        private readonly IStudentService _studentService;
-//     //   private readonly IUserService _userService;
+//using Services.User;
+using static Data.DTOs.Student.StudentDto;
 
-//        public StudentController(IStudentService studentService 
-//            //IUserService userService
-//            ) {
-//            _studentService = studentService;
-//          //  _userService = userService;
-//        }
-//        [HttpGet("get-all-students")]
-//        //[Permission(nameof(Permissions.Users_Get))] 
-//        public async Task<ResponseResult<List<StudentAllViewDto>>> GetAllStudent()
-//        {
+namespace WebAPI.Controllers.Student
+{
+    [Route("api/[controller]")]
+    [ApiController]
+   
+    public class StudentController : ControllerBase
+    {
+        private readonly IStudentService _studentService;
+        //   private readonly IUserService _userService;
 
-//            var result = await _studentService.GetAllStudentAsync();
-//            return result;
-//        }
+        public StudentController(IStudentService studentService
+            //IUserService userService
+            )
+        {
+            _studentService = studentService;
+            //  _userService = userService;
+        }
+        [HttpGet("get-all-students")]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))] 
+        public async Task<PagedListResult<AppUserViewDTO>> GetAllStudentDm(DataManagerRequest dm)
+        {
 
-//        [HttpDelete("delete-student")]
-        
-//        public async Task<ResponseResult<AppUserDTO>> DeleteStudent(string userId)
-//        {
-//            var deletedUser = await _userService.DeleteUserAsync(userId);
-//            return deletedUser;
-//        }
+            var result = await _studentService.GetStudentsAsync(dm);
+            return result;
+        }
 
-//        [HttpGet("get-student-by-id")]
-//        public async Task<ResponseResult<AppUserDTO>> GetStudentById(string userId)
-//        {
-//            var user = await _userService.GetUserByIdAsync(userId);
-//            return user;
-//        }
 
-//        [HttpPut("update-student")]
-       
-//        public async Task<ResponseResult<AppUserUpdateDTO>> UpdateStudent(AppUserUpdateDTO user)
-//        {
-//            var updatedUser = await _userService.UpdateUsertAsync(user);
-//            return updatedUser;
-//        }
+        [HttpGet("get-number-students-by-gender")]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
+        public async Task<ResponseResult<int>> GetNumberOfStudentByGender(bool gender)
+        {
 
-//    }
-//}
+            var result = await _studentService.GetNumberOfStudentsByGenderAsync(gender);
+            return result;
+        }
+
+        [HttpGet("get-number-students-by-gender-and-TeacherId")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId))]
+        public async Task<ResponseResult<int>> GetNumberOfStudentByGenderAndTeacherId(bool gender , string teacherId)
+        {
+
+            var result = await _studentService.GetNumberOfStudentsByGenderAndByTeacherIdAsync(gender , teacherId);
+            return result;
+        }
+
+        [HttpGet("get-number-students-by-status")]
+         [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
+        public async Task<ResponseResult<int>> GetNumberOfStudentByStatusAsync(bool status )
+        {
+
+            var result = await _studentService.GetNumberOfStudentsByStatusAsync(status);
+            return result;
+        }
+
+        [HttpGet("get-number-students-by-status-and-teacherId")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId))]
+        public async Task<ResponseResult<int>> GetNumberOfStudentByStatusAndTeacherIdAsync(bool status , string teacherId)
+        {
+
+            var result = await _studentService.GetNumberOfStudentsByStatusAndByTeacherIdAsync(status, teacherId);
+            return result;
+        }
+
+
+
+        [HttpGet("get-number-students")]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
+        public async Task<ResponseResult<int>> GetNumberOfStudentAsync()
+        {
+
+            var result = await _studentService.GetNumberOfStudentsAsync();
+            return result;
+        }
+
+
+        //GetNumberOfStudentsByTeacherIdAsync
+        [HttpGet("get-number-students-by-teacherId")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId))]
+        public async Task<ResponseResult<int>> GetNumberOfStudentByTeacherIdAsync(string teacherId)
+        {
+
+            var result = await _studentService.GetNumberOfStudentsByTeacherIdAsync(teacherId);
+            return result;
+        }
+
+
+    }
+}

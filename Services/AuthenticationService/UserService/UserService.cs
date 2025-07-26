@@ -1,4 +1,5 @@
-﻿using Core.Domains;
+﻿using Core;
+using Core.Domains;
 using Data.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +8,8 @@ using SchoolManagement.Data;
 using SchoolManagement.Models;
 using Services._Base;
 using Services.LoggerService;
+using Services.SyncGridOperations;
+using Syncfusion.EJ2.Base;
 using Syncfusion.EJ2.FileManager;
 using System;
 using System.Collections.Generic;
@@ -20,10 +23,12 @@ namespace Services.AuthenticationService.UserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly SchoolManagementContext _context;
         public UserService(SchoolManagementContext dbContext, ILoggerService<UserService> logger, IHttpContextAccessor httpAccessor, UserManager<ApplicationUser> userManager , RoleManager<ApplicationRole> roleManager) : base(dbContext, logger, httpAccessor)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = dbContext;
         }
 
         public async Task<ResponseResult<bool>> ChangePasswordAsync(string userId, string oldPassword, string newPassword)
@@ -52,7 +57,7 @@ namespace Services.AuthenticationService.UserService
         // create user
         public async Task<ResponseResult<AppUserDTO>> CreateStudentAsync(AppUserDTO user)
         {
-            var AdminRole = _roleManager.FindByNameAsync("student").Result;
+            var studentRole = await _roleManager.FindByNameAsync("student");
             try
             {
                 var newUser = new ApplicationUser
@@ -62,35 +67,50 @@ namespace Services.AuthenticationService.UserService
                     PhoneNumber = user.PhoneNumber,
                     FullName = user.FullName,
                     IsActive = true,
-                    CreatedOnUtc = DateTime.Now,
+                    CreatedOnUtc = DateTime.UtcNow,
                     DateOfBirth = user.DateOfBirth,
                     Image = user.Image,
-                    RoleId = AdminRole.Id,
-                    Gender = user.Gender ,
-                    UserName = user.UserName
-                    
+                    RoleId = studentRole.Id,
+                    Gender = user.Gender,
+                    UserName = user.UserName,
+                    ClassRoomId = user.ClassRoomId
                 };
 
                 var result = await _userManager.CreateAsync(newUser, user.PasswordHash);
-
                 if (!result.Succeeded)
                 {
-                    return Error<AppUserDTO>(result.Errors.FirstOrDefault().Description);
+                    return Error<AppUserDTO>(result.Errors.FirstOrDefault()?.Description);
                 }
 
-                var role = await _dbContext.Roles.FirstOrDefaultAsync(x => x.Id == AdminRole.Id);
-                if (role != null)
+                // إضافة الدرجات بعد إنشاء المستخدم
+                var subjects = await _context.Subjects.ToListAsync();
+                foreach (var subject in subjects)
                 {
-                    await _userManager.AddToRoleAsync(newUser, role.Name);
+                    if (subject.IsActive == true)
+                        newUser.Grades.Add(new Grades
+                        {
+                            ApplicationUserId = newUser.Id,
+                            SubjectId = subject.Id,
+                            ClassroomId = (int)newUser.ClassRoomId,
+                            StudentGrad = 0,
+                            AssignedDate = DateTime.UtcNow
+                        });
+                    
+                }
+
+                await _context.SaveChangesAsync();
+
+                // إضافة الدور
+                if (studentRole != null)
+                {
+                    await _userManager.AddToRoleAsync(newUser, studentRole.Name);
                 }
 
                 return Success(new AppUserDTO
                 {
-                   
                     Email = newUser.Email,
                     PhoneNumber = newUser.PhoneNumber,
-                    FullName = newUser.FullName,
-                    
+                    FullName = newUser.FullName
                 });
             }
             catch (Exception ex)
@@ -182,6 +202,8 @@ namespace Services.AuthenticationService.UserService
             }
         }
 
+      
+
         public async Task<ResponseResult<AppUserDTO>> GetUserByIdAsync(string userId)
         {
             try
@@ -265,5 +287,8 @@ namespace Services.AuthenticationService.UserService
                 return Error<AppUserUpdateDTO>(ex);
             }
         }
+
+       
+
     }
 }

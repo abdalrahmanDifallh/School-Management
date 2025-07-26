@@ -1,10 +1,14 @@
-﻿using Core.Domains;
+﻿using Core;
+using Core.Domains;
+using Data.DTOs;
 using Data.DTOs.Grade;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Data;
 using Services._Base;
 using Services.LoggerService;
+using Services.SyncGridOperations;
+using Syncfusion.EJ2.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static Data.DTOs.Classe.ClasseDto;
 using static Data.DTOs.Grade.GradeDTO;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Services.Grade
 {
@@ -47,7 +52,7 @@ namespace Services.Grade
             }
         }
 
-        public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllStudentForTeacherIdAndSubjectIdAsync(string teacherId, int subjectId)
+        public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllGradesForTeacherIdAndSubjectIdAsync(string teacherId, int subjectId)
         {
             try
             {
@@ -76,11 +81,11 @@ namespace Services.Grade
             }
         }
 
-        public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllStudentForTeacherIdAsync(string teacharId)
+        public async Task<PagedListResult<GradeAllViewDto>> GetAllGradesForTeacherIdAsync(DataManagerRequest dm, string teacharId)
         {
             try
             {
-                var grades = await _context.Grades
+                var grades = _context.Grades
                     .Where(g => g.IsActive == true)
                     .Where(g => g.Classroom.TeacherUserId == teacharId)
                     .GroupBy(g => new { g.ApplicationUser.Id, g.ApplicationUser.FullName, g.ApplicationUser.Gender, g.Classroom.Name, g.ApplicationUser.Image })
@@ -92,14 +97,14 @@ namespace Services.Grade
                         Classe = g.Key.Name,
                         Gender = g.Key.Gender,
                         AverageGrade = (int)(g.Any() ? (double)g.Sum(x => x.StudentGrad) / 10.0 : 0) // Calculate average grade
-                    })
-                    .ToListAsync();
+                    });
 
-                return Success(grades);
+                var result = await SyncGridOperations<GradeAllViewDto>.PagingAndFilterAsync(grades, dm);
+                return result;
             }
             catch (Exception ex)
             {
-                return Error<List<GradeAllViewDto>>(ex);
+                return new PagedListResult<GradeAllViewDto>();
             }
         }
 
@@ -143,6 +148,11 @@ namespace Services.Grade
             {
                 return Error<GradeNewDto>(ex);
             }
+        }
+
+        public Task<ResponseResult<float>> GetAvregeScore()
+        {
+            throw new NotImplementedException();
         }
     }
 

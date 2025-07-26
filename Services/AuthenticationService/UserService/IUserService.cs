@@ -1,6 +1,8 @@
 ﻿
+using Core;
 using Core.Domains;
 using Data.DTOs;
+using Syncfusion.EJ2.Base;
 
 namespace Services.AuthenticationService.UserService
 {
@@ -13,7 +15,9 @@ namespace Services.AuthenticationService.UserService
      //   Task<ResponseResult<bool>> DeactivateUserAsync(string userId);
           Task<ResponseResult<AppUserDTO>> DeleteUserAsync(string userId);
          Task<ResponseResult<AppUserDTO>> GetUserByIdAsync(string userId);
-        //  Task<PagedListResult<AppUserDTO>> GetUsersAsync(DataManagerRequest dm);
+        
+
+          //Task<PagedListResult<AppUserDTO>> GetstudentAsync(DataManagerRequest dm);
         Task<ResponseResult<AppUserUpdateDTO>> UpdateUserAsync(AppUserUpdateDTO user);
 
     }

@@ -20,9 +20,9 @@ namespace Data.DTOs.Classe
 
             public string ClassTeacher { get; set; }
 
-            [NotMapped]
-            public int StudentNumber { get; set; }
-            public string ImageTeacher { get; set; }
+           
+            public int NumberOfStudent { get; set; }
+            public string ImageOfTeacher { get; set; }
         }
         public class ClasseCreatDTO
         {
