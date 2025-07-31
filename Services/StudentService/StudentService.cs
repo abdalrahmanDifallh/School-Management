@@ -67,6 +67,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
                     DateOfBirth = s.DateOfBirth,
                     PhoneNumber = s.PhoneNumber,
                     Address = s.Address,
+                    Email = s.Email,
                     Gender = s.Gender,
                     Image = s.Image,
                     ClassName = s.Classroom.Name,
@@ -132,6 +133,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
 
         var count = await _userManager.Users
             .Where(s => s.RoleId == studentRole.Id)
+            .Where(s => s.IsActive == true)
             .Where(s => s.Gender == gender)
             .CountAsync();
 
@@ -144,6 +146,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
 
         var students = await _userManager.Users
             .Where(s => s.RoleId == studentRole.Id)
+            .Where(s => s.IsActive == true)
             .Include(s => s.Grades)
             .ToListAsync();
 
@@ -170,6 +173,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
         var studentRole = await _roleManager.FindByNameAsync("Student");
 
         var count = await _userManager.Users
+            .Where(s => s.IsActive == true)
             .Where(s => s.RoleId == studentRole.Id)
             .CountAsync();
 
@@ -182,6 +186,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
 
         var count = await _userManager.Users
             .Where(s => s.RoleId == studentRole.Id)
+            .Where(s => s.IsActive == true)
             .Where(s => s.Classroom.TeacherUserId == teacherId)
             .CountAsync();
 
@@ -195,6 +200,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
         var count = await _userManager.Users
             .Where(s => s.RoleId == studentRole.Id)
             .Where(s => s.Gender == gender)
+            .Where(s => s.IsActive == true)
             .Where(s => s.Classroom.TeacherUserId == teacherId)
             .CountAsync();
 
@@ -207,6 +213,7 @@ public class StudentService : BaseService<StudentService>, IStudentService
 
         var students = await _userManager.Users
             .Where(s => s.RoleId == studentRole.Id)
+            .Where(s => s.IsActive == true)
             .Where(s => s.Classroom.TeacherUserId == teacherId)
             .Include(s => s.Grades)
             .ToListAsync();

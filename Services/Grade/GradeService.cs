@@ -194,7 +194,7 @@ namespace Services.Grade
             {
                 var studentRole = await _roleManager.FindByNameAsync("Student");
                 var studentAveragesList = await _userManager.Users
-                    .Where(u => u.IsActive && u.RoleId == studentRole.Id)
+                    .Where(u => u.IsActive == true && u.RoleId == studentRole.Id)
                     .Select(s => s.Grades
                         .Where(g => g.AssignedDate.Year == year)
                         .Average(g => (float)g.StudentGrad))
@@ -219,7 +219,7 @@ namespace Services.Grade
                 var studentRole = await _roleManager.FindByNameAsync("Student");
 
                 var studentAveragesList = await _userManager.Users
-                    .Where(u => u.IsActive && u.RoleId == studentRole.Id)
+                    .Where(u => u.IsActive == true && u.RoleId == studentRole.Id)
                     .Where(g => g.Classroom.TeacherUserId == teacharId)
                     .Select(s => s.Grades
                           .Where(g => g.AssignedDate.Year == year)
