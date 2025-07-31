@@ -1,6 +1,4 @@
-﻿
-
-using Core;
+﻿using Core;
 using Core.Domains;
 using Data.DTOs;
 using Syncfusion.EJ2.Base;
@@ -10,9 +8,11 @@ namespace Services.StudentService
 {
     public interface IStudentService
     {
-       // Task<ResponseResult<List<StudentAllViewDto>>> GetAllStudentAsync();
+        Task<ResponseResult<List<AppUserViewDTO>>> GetAllStudentAsync();
         Task<PagedListResult<AppUserViewDTO>> GetStudentsAsync(DataManagerRequest dm);
         Task<ResponseResult<int>> GetNumberOfStudentsAsync();
+        Task<ResponseResult<int>> GetPassRateAsync(); // is (number pass student / all studnet ) * 100 
+        Task<ResponseResult<int>> GetPassRateByTeacherIdAsync(string teacherId);
         Task<ResponseResult<int>> GetNumberOfStudentsByTeacherIdAsync(string teacherId);
         Task<ResponseResult<int>> GetNumberOfStudentsByGenderAsync(bool gender);
         Task<ResponseResult<int>> GetNumberOfStudentsByGenderAndByTeacherIdAsync(bool gender , string teacherId);

@@ -29,47 +29,70 @@ public class StudentService : BaseService<StudentService>, IStudentService
 
 
 
-    //public async Task<ResponseResult<List<StudentAllViewDto>>> GetAllStudentAsync()
-    //{
-    //    try
-    //    {
+    public async Task<ResponseResult<List<AppUserViewDTO>>> GetAllStudentAsync()
+    {
+        var studentRole = _roleManager.FindByNameAsync("Student").Result;
 
-    //        var students = await _context.Users
-    //            .Where(u => u.RoleId == "7fb258f3-1976-4b86-8bc8-1e6976a34d91")// افتراض أن هناك حقل Role لتحديد نوع المستخدم
-    //            .Where(u => u.IsActive == true)
-    //            .Include(s => s.Classroom) // تضمين بيانات الصف
-    //            .Include(s => s.Grades) // تضمين بيانات العلامات
-    //            .Select(s => new StudentAllViewDto
-    //            {
-    //                Id = s.Id,
-    //                FullName = s.FullName,
-    //                PhoneNumber = s.PhoneNumber,
-    //                Address = s.Address,
-    //                Gender = s.Gender,
-    //                Image = s.Image,
-    //                ClassRoomName = s.Classroom.Name,
-    //                AverageGrade = s.Grades.Any() ? (double)s.Grades.Sum(g => g.StudentGrad) / 10.0 : 0
-    //            })
-    //            .ToListAsync();
 
-    //        return Success(students);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return Error<List<StudentAllViewDto>>(ex);
-    //    }
-    //}
+        //var students = await _context.Users
+        //    .Where(u => u.RoleId == "7fb258f3-1976-4b86-8bc8-1e6976a34d91")// افتراض أن هناك حقل Role لتحديد نوع المستخدم
+        //    .Where(u => u.IsActive == true)
+        //    .Include(s => s.Classroom) // تضمين بيانات الصف
+        //    .Include(s => s.Grades) // تضمين بيانات العلامات
+        //    .Select(s => new StudentAllViewDto
+        //    {
+        //        Id = s.Id,
+        //        FullName = s.FullName,
+        //        PhoneNumber = s.PhoneNumber,
+        //        Address = s.Address,
+        //        Gender = s.Gender,
+        //        Image = s.Image,
+        //        ClassRoomName = s.Classroom.Name,
+        //        AverageGrade = s.Grades.Any() ? (double)s.Grades.Sum(g => g.StudentGrad) / 10.0 : 0
+        //    })
+        //    .ToListAsync();
+
+        try
+        {
+            var query = await _userManager.Users
+                //.Where(u => u.RoleId == AdminRole.Id)
+                .Where(u => u.IsActive == true)
+                .Where(u => u.RoleId == studentRole.Id)
+                .Include(s => s.Classroom)
+                .Include(s => s.Grades)
+                .Select(s => new AppUserViewDTO
+                {
+                    Id = s.Id,
+                    FullName = s.FullName,
+                    DateOfBirth = s.DateOfBirth,
+                    PhoneNumber = s.PhoneNumber,
+                    Address = s.Address,
+                    Gender = s.Gender,
+                    Image = s.Image,
+                    ClassName = s.Classroom.Name,
+                    AverageGrade = s.Grades != null && s.Grades.Any()
+                                    ? s.Grades.Average(g => (double)g.StudentGrad)
+                                    : 0
+                }).ToListAsync();
+
+
+            return Success(query);
+        }
+        catch (Exception ex)
+        {
+            return Error<List<AppUserViewDTO>>(ex);
+        }
+    }
 
     public async Task<PagedListResult<AppUserViewDTO>> GetStudentsAsync(DataManagerRequest dm)
     {
-        var AdminRole = _roleManager.FindByNameAsync("Student").Result;
+        var studentRole = _roleManager.FindByNameAsync("Student").Result;
         try
         {
             var query = _userManager.Users
                 //.Where(u => u.RoleId == AdminRole.Id)
                 .Where(u => u.IsActive == true)
-                .Where(u => u.RoleId == AdminRole.Id)
-
+                .Where(u => u.RoleId == studentRole.Id)
                 .Include(s => s.Classroom)
                 .Include(s => s.Grades)
                 .Select(s => new AppUserViewDTO
@@ -204,6 +227,34 @@ public class StudentService : BaseService<StudentService>, IStudentService
         }
 
         return new ResponseResult<int> { Data = count, IsSuccess = true };
+    }
+
+    public async Task<ResponseResult<int>> GetPassRateAsync()
+    {
+        var numberStudentPass = await GetNumberOfStudentsByStatusAsync(true);
+        var totalStudents = await GetNumberOfStudentsAsync();
+
+        if (!numberStudentPass.IsSuccess || !totalStudents.IsSuccess || totalStudents.Data == 0)
+        {
+            return new ResponseResult<int> { IsSuccess = false, Data = 0, Errors =  { "Unable to calculate pass rate." } };
+        }
+
+        var passRate = (numberStudentPass.Data * 100) / totalStudents.Data; // Calculate percentage
+        return new ResponseResult<int> { Data = passRate, IsSuccess = true };
+    }
+
+    public async Task<ResponseResult<int>> GetPassRateByTeacherIdAsync(string teacherId)
+    {
+        var numberStudentPass = await GetNumberOfStudentsByStatusAndByTeacherIdAsync(true , teacherId);
+        var totalStudents = await GetNumberOfStudentsByTeacherIdAsync(teacherId);
+
+        if (!numberStudentPass.IsSuccess || !totalStudents.IsSuccess || totalStudents.Data == 0)
+        {
+            return new ResponseResult<int> { IsSuccess = false, Data = 0, Errors = { "Unable to calculate pass rate." } };
+        }
+
+        var passRate = (numberStudentPass.Data * 100) / totalStudents.Data; // Calculate percentage
+        return new ResponseResult<int> { Data = passRate, IsSuccess = true };
     }
 }
 

@@ -3,12 +3,15 @@ using Core.Domains;
 using Data.DTOs;
 using Data.DTOs.Grade;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagement.Data;
+using SchoolManagement.Models;
 using Services._Base;
 using Services.LoggerService;
 using Services.SyncGridOperations;
 using Syncfusion.EJ2.Base;
+using Syncfusion.EJ2.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +26,18 @@ namespace Services.Grade
     public class GradeService : BaseService<GradeService>, IGradeService
     {
         private readonly SchoolManagementContext _context;
-        public GradeService(SchoolManagementContext dbContext, ILoggerService<GradeService> logger, IHttpContextAccessor httpAccessor) : base(dbContext, logger, httpAccessor)
+        private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        public GradeService(SchoolManagementContext dbContext,
+            ILoggerService<GradeService> logger, 
+            IHttpContextAccessor httpAccessor ,
+            RoleManager<ApplicationRole> roleManager,
+             UserManager<ApplicationUser> userManager
+            ) : base(dbContext, logger, httpAccessor)
         {
             _context = dbContext;
+            _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         public async Task<ResponseResult<List<GradeViewDto>>> GetAllGredesForStudentAsync(string userId)
@@ -107,6 +119,32 @@ namespace Services.Grade
                 return new PagedListResult<GradeAllViewDto>();
             }
         }
+        public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllGradesForTeacherIdAsync(string teacharId)
+        {
+            try
+            {
+                var grades = await _context.Grades
+                    .Where(g => g.IsActive == true)
+                    .Where(g => g.Classroom.TeacherUserId == teacharId)
+                    .GroupBy(g => new { g.ApplicationUser.Id, g.ApplicationUser.FullName, g.ApplicationUser.Gender, g.Classroom.Name, g.ApplicationUser.Image })
+                    .Select(g => new GradeAllViewDto
+                    {
+                        image = g.Key.Image,
+                        StudentName = g.Key.FullName,
+                        Id = g.Key.Id,
+                        Classe = g.Key.Name,
+                        Gender = g.Key.Gender,
+                        AverageGrade = (int)(g.Any() ? (double)g.Sum(x => x.StudentGrad) / 10.0 : 0) // Calculate average grade
+                    }).ToListAsync();
+
+
+                return Success(grades);
+            }
+            catch (Exception ex)
+            {
+                return Error<List<GradeAllViewDto>>(ex);
+            }
+        }
 
         public async Task<ResponseResult<GradeNewDto>> PutGredesAsync(GradeEditDto gradeEditDto)
         {
@@ -150,11 +188,61 @@ namespace Services.Grade
             }
         }
 
-        public Task<ResponseResult<float>> GetAvregeScore()
+        public async Task<ResponseResult<float>> GetAverageScoreByYear(int year)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var studentRole = await _roleManager.FindByNameAsync("Student");
+                var studentAveragesList = await _userManager.Users
+                    .Where(u => u.IsActive && u.RoleId == studentRole.Id)
+                    .Select(s => s.Grades
+                        .Where(g => g.AssignedDate.Year == year)
+                        .Average(g => (float)g.StudentGrad))
+                    .ToListAsync();
+
+                var overallAverage = studentAveragesList.Any()
+                    ? studentAveragesList.Average()
+                    : 0;
+
+                return Success(overallAverage);
+            }
+            catch (Exception ex)
+            {
+                return Error<float>(ex);
+            }
         }
+
+        public async Task<ResponseResult<float>> GetAverageScoreByTeacherId(string teacharId ,int year)
+        {
+            try
+            {
+                var studentRole = await _roleManager.FindByNameAsync("Student");
+
+                var studentAveragesList = await _userManager.Users
+                    .Where(u => u.IsActive && u.RoleId == studentRole.Id)
+                    .Where(g => g.Classroom.TeacherUserId == teacharId)
+                    .Select(s => s.Grades
+                          .Where(g => g.AssignedDate.Year == year)
+                          .Average(g => (float)g.StudentGrad))
+                    .ToListAsync();
+
+                var overallAverage = studentAveragesList.Any()
+                    ? studentAveragesList.Average()
+                    : 0;
+
+                return Success(overallAverage);
+            }
+            catch (Exception ex)
+            {
+                return Error<float>(ex);
+            }
+        }
+
     }
 
 
 }
+
+//AverageGrade = s.Grades != null && s.Grades.Any()
+//              ? s.Grades.Average(g => (double)g.StudentGrad)
+//              : 0)

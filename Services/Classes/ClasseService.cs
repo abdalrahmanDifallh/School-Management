@@ -1,7 +1,7 @@
 ﻿
 using Core;
 using Core.Domains;
-
+using Data.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -131,6 +131,32 @@ namespace Services.Classes
             catch (Exception ex)
             {
                 return new PagedListResult<ClasseDTO>();
+            }
+        }
+
+        public async Task<ResponseResult<List<ClasseDTO>>> GetAllClassesAsync()
+        {
+            try
+            {
+                var classes = await _context.Classrooms
+                    .Where(u => u.IsActive == true)
+                    .Include(s => s.Teacher)
+                    .Include(s => s.ApplicationUsers)
+                    .Select(s => new ClasseDTO
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        AcademicYear = s.AcademicYear,
+                        ClassTeacher = s.Teacher.FullName,
+                        ImageOfTeacher = s.Teacher.Image,
+                        NumberOfStudent = _userManager.Users.Count(u => u.Classroom.Id == s.Id)
+                    }).ToListAsync();
+
+              return Success(classes);
+            }
+            catch (Exception ex)
+            {
+                return Error<List<ClasseDTO>>(ex);
             }
         }
 

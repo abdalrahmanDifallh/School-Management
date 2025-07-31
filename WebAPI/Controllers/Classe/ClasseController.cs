@@ -58,6 +58,16 @@ namespace WebAPI.Controllers.Classe
             return result;
         }
 
+        [HttpGet("get-all-classes-v2")]
+        [Permission(nameof(Auth.PermissionsAdmin.Classrooms_Get))]
+        public async Task<ResponseResult<List<ClasseDTO>>> GetAllClasses()
+        {
+
+            var result = await _classeService.GetAllClassesAsync();
+            return result;
+        }
+
+
         [HttpDelete("delete-classe")]
         [Permission(nameof(Auth.PermissionsAdmin.Classrooms_Delete))]
         public async Task<ResponseResult<ClasseDTO>> DeleteClasse(int classeId)

@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using ProjectManagement.WebAPI.Filters;
 using SchoolManagement.Models;
 using Services.Subject;
+using Syncfusion.EJ2.Notifications;
+using WebAPI.Notification;
 using static Data.DTOs.Classe.ClasseDto;
 
 namespace WebAPI.Controllers.Subjects
@@ -18,9 +21,11 @@ namespace WebAPI.Controllers.Subjects
     public class SubjectController : ControllerBase
     {
         private readonly ISubjectService _subjectService;
-        public SubjectController(ISubjectService subjectService)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public SubjectController(ISubjectService subjectService , IHubContext<NotificationHub> hubContext)
         {
             _subjectService = subjectService;
+            _hubContext = hubContext;
         }
 
         [HttpGet("get-all-subject")]
@@ -34,20 +39,24 @@ namespace WebAPI.Controllers.Subjects
 
         [HttpPost("create-subject")]
         [Permission(nameof(Auth.PermissionsAdmin.Subjects_Create))]
-        public async Task<ActionResult<SubjectCreatDTO>> CreatSubjctAsync(SubjectCreatDTO request)
+        public async Task<ActionResult<SubjectCreatDTO>> CreatSubjctAsync([FromBody]  SubjectCreatDTO request , string userId)
         {
+           
+
             if (string.IsNullOrWhiteSpace(request.Name) )
             {
                 return BadRequest("Name is  required");
             }
 
-            var user = await _subjectService.CreatSubjectAsync(request);
-            if (user is null)
+            var subject = await _subjectService.CreatSubjectAsync(request);
+            if (subject is null)
             {
                 return BadRequest("subject already exists.");
             }
-            return Ok(user);
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", userId, "New subject added");
+            return Ok(subject);
         }
+
 
         [HttpDelete("delete-subject")]
         [Permission(nameof(Auth.PermissionsAdmin.Subjects_Delete))]
@@ -56,6 +65,7 @@ namespace WebAPI.Controllers.Subjects
             var deletedSubject = await _subjectService.DeleteSubjectAsync(subjectId);
             return deletedSubject;
         }
+
 
         [HttpGet("get-subject-by-id")]
         [Permission(nameof(Auth.PermissionsAdmin.Subjects_Get_By_Id))]
@@ -72,8 +82,6 @@ namespace WebAPI.Controllers.Subjects
             var updatedSubject = await _subjectService.UpdateSubjectAsync(classe);
             return updatedSubject;
         }
-
-
 
 
     }

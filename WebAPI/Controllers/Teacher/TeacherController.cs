@@ -2,18 +2,18 @@
 using Core.Domains;
 using Core.Enums;
 using Data.DTOs;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManagement.WebAPI.Filters;
-using Services.StudentService;
 using Services.TeacherService;
 using Syncfusion.EJ2.Base;
-using static Data.DTOs.Teacher.TeacherDto;
+
 
 namespace WebAPI.Controllers.Teacher
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TeacherController : ControllerBase
     {
         private readonly ITeacherService _teacherService;
@@ -25,10 +25,21 @@ namespace WebAPI.Controllers.Teacher
         }
 
         [HttpGet("get-all-teachers")]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
         public async Task<PagedListResult<AppUserViewDTO>> GetAllStudentDm(DataManagerRequest dm)
         {
 
             var result = await _teacherService.GetTeachersAsync(dm);
+            return result;
+        }
+
+
+        [HttpGet("get-all-teachers-v2")]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
+        public async Task<ResponseResult<List<AppUserViewDTO>>> GetAllStudent()
+        {
+
+            var result = await _teacherService.GetAllTeacherAsync();
             return result;
         }
 

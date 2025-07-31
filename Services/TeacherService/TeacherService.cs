@@ -32,32 +32,35 @@ public class TeacherService : BaseService<TeacherService>, ITeacherService
         _roleManager = roleManager;
     }
 
-    public async Task<ResponseResult<List<TeacherAllViewDto>>> GetAllTeacherAsync()
+    public async Task<ResponseResult<List<AppUserViewDTO>>> GetAllTeacherAsync()
     {
+        var teacherRole = _roleManager.FindByNameAsync("Teacher").Result;
+
         try
         {
 
-            var teachers = await _userManager.Users
-                .Where(u => u.RoleId == "2")// افتراض أن هناك حقل Role لتحديد نوع المستخدم
-                .Where(u => u.IsActive == true)
-                .Include(s => s.Classroom) // تضمين بيانات الصف
-                .Select(s => new TeacherAllViewDto
-                {
-                    Id = s.Id,
-                    FullName = s.FullName,
-                    PhoneNumber = s.PhoneNumber,
-                    Address = s.Address,
-                    Gender = s.Gender,
-                    Image = s.Image,
-                    ClassRoomName = s.Classroom.Name,
-                })
+            var query =  await _userManager.Users
+               .Where(u => u.IsActive == true)
+               .Where(u => u.RoleId == teacherRole.Id)
+               .Include(s => s.Classroom)
+               .Include(s => s.Grades)
+               .Select(s => new AppUserViewDTO
+               {
+                   Id = s.Id,
+                   FullName = s.FullName,
+                   PhoneNumber = s.PhoneNumber,
+                   Address = s.Address,
+                   Gender = s.Gender,
+                   Image = s.Image,
+                   ClassName = s.Classroom.Name,
+               })
                 .ToListAsync();
 
-            return Success(teachers);
+            return Success(query);
         }
         catch (Exception ex)
         {
-            return Error<List<TeacherAllViewDto>>(ex);
+            return Error<List<AppUserViewDTO>>(ex);
         }
     }
 
@@ -74,12 +77,12 @@ public class TeacherService : BaseService<TeacherService>, ITeacherService
 
     public async Task<PagedListResult<AppUserViewDTO>> GetTeachersAsync(DataManagerRequest dm)
     {
-        var AdminRole = _roleManager.FindByNameAsync("Teacher").Result;
+        var teacherRole = _roleManager.FindByNameAsync("Teacher").Result;
         try
         {
             var query = _userManager.Users
                 .Where(u => u.IsActive == true)
-                .Where(u => u.RoleId == AdminRole.Id)
+                .Where(u => u.RoleId == teacherRole.Id)
                 .Include(s => s.Classroom)
                 .Include(s => s.Grades)
                 .Select(s => new AppUserViewDTO

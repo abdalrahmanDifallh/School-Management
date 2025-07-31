@@ -24,32 +24,39 @@ namespace WebAPI.Controllers
             _rolesService = rolesService;
         }
 
+
+
         [HttpPost("CreateRole")]
-       // [Permission(nameof(Permissions.Roles_Create))]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Create))]
         public async Task<ResponseResult<RoleDTO>> CreateRole([FromBody] RoleCreateDTO role)
         {
             var result = await _rolesService.CreateRoleAsync(role);
             return result;
         }
 
+
+
         [HttpGet("GetPermissions")]
-      //  [Permission(nameof(Permissions.Roles_Get))]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
         public async Task<ResponseResult<List<PermissionDTO>>> GetPermissions()
         {
             var result = await _rolesService.GetPermissionsAsync();
             return result;
         }
 
-        [HttpPost("GetRoles")]
-       
+
+        [HttpGet("GetRoles")]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
         public async Task<PagedListResult<RoleDTO>> GetRoles([FromBody] DataManagerRequest dm)
         {
             var result = await _rolesService.GetRolesAsync(dm);
             return result;
         }
 
+
+
         [HttpPost("UpdateRole")]
-     //   [Permission(nameof(Permissions.Roles_Update))]
+        [Permission(nameof(Auth.PermissionsAdmin.Users_Update))]
         public async Task<ResponseResult<RoleDTO>> UpdateRole([FromBody] RoleUpdateDTO role)
         {
             var result = await _rolesService.UpdateRoleAsync(role);

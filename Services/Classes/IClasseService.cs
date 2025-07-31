@@ -16,6 +16,7 @@ namespace Services.Classes
     public interface IClasseService
     {
         Task<PagedListResult<ClasseDTO>> GetAllClassesAsync(DataManagerRequest dm);
+        Task<ResponseResult<List<ClasseDTO>>> GetAllClassesAsync();
         Task<ResponseResult<int>> GetNumberOfClassesAsync();
         Task<ResponseResult<ClasseCreatDTO>> CreatClasseAsync(ClasseCreatDTO request);
 

@@ -111,6 +111,7 @@ namespace WebAPI.Controllers
             return Ok(user);
         }
 
+
         [HttpPost("change-password")]
         [Permission(nameof(Auth.PermissionsAdmin.Users_ChangePassword))]
         public async Task<ResponseResult<bool>> ChangePassword(string userId, string oldPassword, string newPassword)
@@ -118,6 +119,7 @@ namespace WebAPI.Controllers
             var result = await _authService.ChangePasswordAsync(userId, oldPassword, newPassword);
             return result;
         }
+
 
         [HttpGet("get-user-by-id")]
         [Permission(nameof(Auth.PermissionsAdmin.Users_Get))]
@@ -127,6 +129,7 @@ namespace WebAPI.Controllers
             return user;
         }
 
+
         [HttpPut("update-user")]
         [Permission(nameof(Auth.PermissionsAdmin.Users_Update))]
         public async Task<ResponseResult<AppUserUpdateDTO>> UpdateUser(AppUserUpdateDTO user)
@@ -134,6 +137,7 @@ namespace WebAPI.Controllers
             var updatedUser = await _authService.UpdateUserAsync(user);
             return updatedUser;
         }
+
 
         [HttpDelete("delete-user")]
         [Permission(nameof(Auth.PermissionsAdmin.Users_Delete))]

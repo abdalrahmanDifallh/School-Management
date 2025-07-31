@@ -8,7 +8,7 @@ namespace Services.TeacherService
 {
     public interface ITeacherService
     {
-        Task<ResponseResult<List<TeacherAllViewDto>>> GetAllTeacherAsync();
+        Task<ResponseResult<List<AppUserViewDTO>>> GetAllTeacherAsync();
 
         Task<PagedListResult<AppUserViewDTO>> GetTeachersAsync(DataManagerRequest dm);
         Task<ResponseResult<int>> GetNumberOfTeacherAsync();

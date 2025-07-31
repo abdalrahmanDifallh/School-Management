@@ -45,9 +45,18 @@ namespace WebAPI.Controllers.Gred
             return greds;
         }
 
+        [HttpGet("get-all-grades-by-teacherId-v2")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId))]
+        public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllGredesForTeacher( string teacharId)
+
+        {
+            var greds = await _gradeService.GetAllGradesForTeacherIdAsync( teacharId);
+            return greds;
+        }
+
+
         [HttpGet("get-all-grades-by-teacherId-And-subjectId")]
         [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId_and_subjectId))]
-
         public async Task<ResponseResult<List<GradeAllViewDto>>> GetAllGredesForTeacherAndSubject(string teacherId, int subjectId)
 
         {
@@ -55,15 +64,30 @@ namespace WebAPI.Controllers.Gred
             return greds;
         }
 
+
         [HttpPut("put-grade-by-gradeI")]
         [Permission(nameof(Auth.PermissionsTeacher.Grades_Update))]
-
         public async Task<ResponseResult<GradeNewDto>> PutGrade(GradeEditDto gradeEditDto)
         {
             var gradeEdited = await _gradeService.PutGredesAsync(gradeEditDto);
             return gradeEdited;
         }
 
+        [HttpGet("get-average-score")]
+        [Permission(nameof(Auth.PermissionsAdmin.Subjects_Get))]
+        public async Task<ResponseResult<float>> GetAverageScore(int year)
+        {
+            var resulte = await _gradeService.GetAverageScoreByYear(year);
+            return resulte;
+        }
+
+        [HttpGet("get-average-score-by-teacherId")]
+        [Permission(nameof(Auth.PermissionsTeacher.Grades_Get_by_TeacherId))]
+        public async Task<ResponseResult<float>> GetAverageScoreByTeacherId(string teacherId , int year)
+        {
+            var resulte = await _gradeService.GetAverageScoreByTeacherId(teacherId , year);
+            return resulte;
+        }
 
         //GetNumberOfClassesAsync
 

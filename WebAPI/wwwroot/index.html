@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>School Notifications</title>
+</head>
+<body>
+    <h1>Notifications ss</h1>
+    
+    <ul id="notifications"></ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7094/notificationHub")
+            .build();
+
+        connection.on("ReceiveNotification", (user, message) => {
+            const li = document.createElement("li");
+            li.textContent = `${user}: ${message}`;
+            document.getElementById("notifications").appendChild(li);
+        });
+
+        connection.start().catch(err => console.error(err));
+    </script>
+</body>
+</html>

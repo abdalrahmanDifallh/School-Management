@@ -15,12 +15,12 @@ namespace Services.Grade
         Task<ResponseResult<List<GradeViewDto>>> GetAllGredesForStudentAsync(string userId);
 
         Task<PagedListResult<GradeAllViewDto>> GetAllGradesForTeacherIdAsync(DataManagerRequest dm, string teacharId);
-
+        Task<ResponseResult<List<GradeAllViewDto>>> GetAllGradesForTeacherIdAsync(string teacharId);
         Task<ResponseResult<List<GradeAllViewDto>>> GetAllGradesForTeacherIdAndSubjectIdAsync(string teacherId, int subjectId);
-
         Task<ResponseResult<GradeNewDto>> PutGredesAsync(GradeEditDto gradeEditDto);
 
-        Task<ResponseResult<float>> GetAvregeScore();
+        Task<ResponseResult<float>> GetAverageScoreByYear(int year);
+        Task<ResponseResult<float>> GetAverageScoreByTeacherId(string teacharId, int year);
 
 
     }

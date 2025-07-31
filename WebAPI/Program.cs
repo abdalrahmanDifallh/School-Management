@@ -7,7 +7,9 @@ using Scalar.AspNetCore;
 using SchoolManagement.Data;
 using SchoolManagement.Models;
 using Services._Base;
+using Services.AuthenticationService;
 using Services.AuthenticationService.RolesService;
+using Services.AuthenticationService.UserService;
 using Services.Classes;
 using Services.Grade;
 using Services.LoggerService;
@@ -15,8 +17,7 @@ using Services.StudentService;
 using Services.Subject;
 using Services.TeacherService;
 using System.Text;
-using Services.AuthenticationService.UserService;
-using Services.AuthenticationService;
+using WebAPI.Notification;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,6 +96,8 @@ builder.Services.AddScoped(typeof(ILoggerService<>), typeof(LoggerService<>));
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSignalR();
+
 // Add session support
 builder.Services.AddSession(options =>
 {
@@ -126,7 +129,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
-
+app.MapHub<NotificationHub>("/notificationHub");
 
 
 // CRITICAL: Map API controllers - this was missing!
